@@ -1,6 +1,22 @@
 import { Outlet } from 'react-router-dom'
+import { useAuth } from '../../hooks/useAuth'
+import { LandingPage } from '../landing/LandingPage'
+import { LoadingSpinner } from '../LoadingSpinner'
 
-// Stub for Milestone 2 — real auth-gated redirect lands in Milestone 3.
 export function ProtectedRoute() {
+  const { user, loading } = useAuth()
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-secondary-lighter dark:bg-secondary">
+        <LoadingSpinner />
+      </div>
+    )
+  }
+
+  if (!user) {
+    return <LandingPage />
+  }
+
   return <Outlet />
 }

@@ -1,6 +1,7 @@
 import { Activity, LogOut } from 'lucide-react'
 import { Link, NavLink } from 'react-router-dom'
 import { ThemeToggle } from '../icons/ThemeToggle'
+import { useAuth } from '../../hooks/useAuth'
 
 const navLinks = [
   { to: '/', label: 'Dashboard' },
@@ -8,6 +9,8 @@ const navLinks = [
 ]
 
 export function Header() {
+  const { signOut } = useAuth()
+
   return (
     <header className="sticky top-0 z-10 border-b border-secondary-light/30 bg-secondary-lighter/90 backdrop-blur dark:border-secondary-light/10 dark:bg-secondary/90">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
@@ -41,6 +44,7 @@ export function Header() {
           <ThemeToggle />
           <button
             type="button"
+            onClick={() => signOut()}
             aria-label="Sign out"
             className="flex items-center gap-1 rounded-md px-2 py-1.5 text-sm text-secondary transition-colors hover:bg-secondary-lighter dark:text-secondary-lighter dark:hover:bg-secondary/60"
           >
