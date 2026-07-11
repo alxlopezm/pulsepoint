@@ -1,8 +1,26 @@
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { ThemeProvider } from './hooks/useTheme'
+import { ProtectedRoute } from './components/auth/ProtectedRoute'
+import { AppLayout } from './components/sections/AppLayout'
+import { Dashboard } from './pages/Dashboard'
+import { InitiativeDetail } from './pages/InitiativeDetail'
+import { Summary } from './pages/Summary'
+
 function App() {
   return (
-    <div className="flex min-h-full items-center justify-center bg-secondary-lighter dark:bg-secondary">
-      <p className="text-secondary dark:text-secondary-lighter">PulsePoint — scaffold ready</p>
-    </div>
+    <ThemeProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route element={<ProtectedRoute />}>
+            <Route element={<AppLayout />}>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/initiatives/:id" element={<InitiativeDetail />} />
+              <Route path="/summary" element={<Summary />} />
+            </Route>
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </ThemeProvider>
   )
 }
 
