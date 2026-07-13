@@ -1,9 +1,13 @@
+import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Plus } from 'lucide-react'
 import { useInitiative } from '../hooks/useInitiative'
 import { useBusinessUnits } from '../hooks/useBusinessUnits'
+import { useUpdates } from '../hooks/useUpdates'
 import { LoadingSpinner } from '../components/LoadingSpinner'
 import { ErrorState } from '../components/ErrorState'
+import { UpdatesTable } from '../components/tables/UpdatesTable'
+import { AddUpdateModal } from '../components/forms/AddUpdateModal'
 import { priorityDotColor, statusMeta } from '../utils/initiativeDisplay'
 import { formatDate } from '../utils/formatDate'
 
@@ -12,6 +16,13 @@ export function InitiativeDetail() {
   const navigate = useNavigate()
   const { initiative, loading, error, refetch } = useInitiative(id)
   const { businessUnits } = useBusinessUnits()
+  const {
+    updates,
+    loading: updatesLoading,
+    error: updatesError,
+    refetch: refetchUpdates,
+  } = useUpdates(id)
+  const [isAddUpdateOpen, setIsAddUpdateOpen] = useState(false)
 
   const businessUnitName = businessUnits.find(
     (bu) => bu.id === initiative?.business_unit_id,
@@ -99,6 +110,45 @@ export function InitiativeDetail() {
               </dd>
             </div>
           </dl>
+        </div>
+      )}
+
+      {!loading && !error && initiative && (
+        <div className="mt-6 rounded-lg border border-secondary-light/20 bg-white p-6 dark:border-secondary-light/10 dark:bg-secondary-light/5">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-secondary dark:text-secondary-lighter">
+              Updates
+            </h2>
+            <button
+              type="button"
+              onClick={() => setIsAddUpdateOpen(true)}
+              className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-primary-dark"
+            >
+              <Plus size={14} />
+              Add Update
+            </button>
+          </div>
+
+          {updatesLoading && (
+            <div className="flex justify-center py-8">
+              <LoadingSpinner />
+            </div>
+          )}
+
+          {!updatesLoading && updatesError && (
+            <ErrorState
+              message={`Couldn't load updates: ${updatesError}`}
+              onRetry={refetchUpdates}
+            />
+          )}
+
+          {!updatesLoading && !updatesError && <UpdatesTable updates={updates} />}
+
+          <AddUpdateModal
+            isOpen={isAddUpdateOpen}
+            onClose={() => setIsAddUpdateOpen(false)}
+            initiativeId={initiative.id}
+          />
         </div>
       )}
     </div>

@@ -3,6 +3,7 @@ import { Modal } from '../modals/Modal'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../hooks/useAuth'
 import { useBusinessUnits } from '../../hooks/useBusinessUnits'
+import { inputClass, labelClass, primaryButtonClass, secondaryButtonClass } from '../../utils/formStyles'
 import type { Initiative, InitiativeStatus, InitiativeType, Priority } from '../../types/database'
 
 const priorities: Priority[] = ['High', 'Medium', 'Low']
@@ -18,10 +19,6 @@ const types: InitiativeType[] = [
   'Enterprise Architecture Governance',
   'Enterprise Architecture Growth',
 ]
-
-const inputClass =
-  'w-full rounded-md border border-secondary-light/30 bg-white px-3 py-2 text-sm text-secondary outline-none transition-colors focus:border-primary dark:border-secondary-light/20 dark:bg-secondary dark:text-secondary-lighter'
-const labelClass = 'text-xs font-medium text-secondary-light'
 
 interface FormState {
   name: string
@@ -240,18 +237,10 @@ export function InitiativeFormModal({ isOpen, onClose, initiative }: InitiativeF
         {error && <p className="text-sm text-accent">{error}</p>}
 
         <div className="mt-2 flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-md px-4 py-2 text-sm font-medium text-secondary transition-colors hover:bg-secondary-lighter dark:text-secondary-lighter dark:hover:bg-secondary-light/10"
-          >
+          <button type="button" onClick={onClose} className={secondaryButtonClass}>
             Cancel
           </button>
-          <button
-            type="submit"
-            disabled={submitting}
-            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-dark disabled:opacity-50"
-          >
+          <button type="submit" disabled={submitting} className={primaryButtonClass}>
             {submitting ? 'Saving…' : isEdit ? 'Save changes' : 'Create initiative'}
           </button>
         </div>

@@ -1,4 +1,5 @@
 import { Modal } from './Modal'
+import { secondaryButtonClass } from '../../utils/formStyles'
 
 interface ConfirmDialogProps {
   isOpen: boolean
@@ -23,11 +24,7 @@ export function ConfirmDialog({
     <Modal isOpen={isOpen} onClose={onClose} title={title}>
       <p className="text-sm text-secondary-light">{message}</p>
       <div className="mt-5 flex justify-end gap-2">
-        <button
-          type="button"
-          onClick={onClose}
-          className="rounded-md px-4 py-2 text-sm font-medium text-secondary transition-colors hover:bg-secondary-lighter dark:text-secondary-lighter dark:hover:bg-secondary-light/10"
-        >
+        <button type="button" onClick={onClose} className={secondaryButtonClass}>
           Cancel
         </button>
         <button
