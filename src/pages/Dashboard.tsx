@@ -6,10 +6,11 @@ import { useBusinessUnits } from '../hooks/useBusinessUnits'
 import { InitiativeCard } from '../components/initiatives/InitiativeCard'
 import { InitiativeFormModal } from '../components/forms/InitiativeFormModal'
 import { ConfirmDialog } from '../components/modals/ConfirmDialog'
+import { FilterBar } from '../components/filters/FilterBar'
 import { LoadingSpinner } from '../components/LoadingSpinner'
 import { ErrorState } from '../components/ErrorState'
 import { supabase } from '../lib/supabaseClient'
-import type { Initiative } from '../types/database'
+import type { Initiative, InitiativeStatus } from '../types/database'
 
 export function Dashboard() {
   const { initiatives, loading, error, refetch } = useInitiatives()
@@ -21,10 +22,28 @@ export function Dashboard() {
   const [deletingInitiative, setDeletingInitiative] = useState<Initiative | null>(null)
   const [deleting, setDeleting] = useState(false)
 
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState<InitiativeStatus | 'All'>('All')
+  const [businessUnitFilter, setBusinessUnitFilter] = useState('All')
+
   const businessUnitNameById = useMemo(
     () => new Map(businessUnits.map((bu) => [bu.id, bu.name])),
     [businessUnits],
   )
+
+  const filteredInitiatives = useMemo(() => {
+    const query = search.trim().toLowerCase()
+    return initiatives.filter((initiative) => {
+      const matchesSearch =
+        !query ||
+        initiative.name.toLowerCase().includes(query) ||
+        (initiative.description ?? '').toLowerCase().includes(query)
+      const matchesStatus = statusFilter === 'All' || initiative.status === statusFilter
+      const matchesBusinessUnit =
+        businessUnitFilter === 'All' || initiative.business_unit_id === businessUnitFilter
+      return matchesSearch && matchesStatus && matchesBusinessUnit
+    })
+  }, [initiatives, search, statusFilter, businessUnitFilter])
 
   const handleDelete = async () => {
     if (!deletingInitiative) return
@@ -52,6 +71,18 @@ export function Dashboard() {
         </button>
       </div>
 
+      {!loading && !error && initiatives.length > 0 && (
+        <FilterBar
+          search={search}
+          onSearchChange={setSearch}
+          status={statusFilter}
+          onStatusChange={setStatusFilter}
+          businessUnitId={businessUnitFilter}
+          onBusinessUnitChange={setBusinessUnitFilter}
+          businessUnits={businessUnits}
+        />
+      )}
+
       {loading && (
         <div className="flex justify-center py-16">
           <LoadingSpinner />
@@ -66,9 +97,15 @@ export function Dashboard() {
         <p className="py-16 text-center text-sm text-secondary-light">No initiatives yet.</p>
       )}
 
-      {!loading && !error && initiatives.length > 0 && (
+      {!loading && !error && initiatives.length > 0 && filteredInitiatives.length === 0 && (
+        <p className="py-16 text-center text-sm text-secondary-light">
+          No initiatives match your filters.
+        </p>
+      )}
+
+      {!loading && !error && filteredInitiatives.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {initiatives.map((initiative) => (
+          {filteredInitiatives.map((initiative) => (
             <InitiativeCard
               key={initiative.id}
               initiative={initiative}
