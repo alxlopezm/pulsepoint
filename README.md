@@ -1,32 +1,55 @@
-# React + TypeScript + Vite
+# PulsePoint
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A web app for tracking technology initiatives — status, ownership, progress updates, and next steps — across business units.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+React 18 + TypeScript, Vite, Tailwind CSS v4, React Router v7, Supabase (Postgres, Auth, Row Level Security, Realtime).
 
-## React Compiler
+## Setup
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1. Install dependencies:
 
-## Expanding the Oxlint configuration
+   ```bash
+   npm install
+   ```
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+2. Create a Supabase project at [supabase.com](https://supabase.com), then copy `.env.local` and fill in your project's URL and anon key (Project Settings → API):
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
+   ```
+   VITE_SUPABASE_URL=
+   VITE_SUPABASE_ANON_KEY=
+   ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+3. Apply the database schema. Migrations live in `supabase/migrations/` and include the full schema, RLS policies, seed data for business units, and realtime publication config:
+
+   ```bash
+   npx supabase login
+   npx supabase link --project-ref <your-project-ref>
+   npx supabase db push
+   ```
+
+4. In the Supabase dashboard, under Authentication → Providers, confirm Email sign-in is enabled. Under Authentication → URL Configuration, set the Site URL (and add to the redirect allow-list) to match your dev server, e.g. `http://localhost:5173`.
+
+5. Start the dev server:
+
+   ```bash
+   npm run dev
+   ```
+
+## Scripts
+
+- `npm run dev` — start the Vite dev server
+- `npm run build` — type-check and build for production
+- `npm run preview` — preview the production build locally
+- `npm run lint` — run Oxlint
+
+## Database
+
+All tables (`initiatives`, `updates`, `next_steps`) are scoped to the authenticated user via Row Level Security — `initiatives.user_id` directly, and `updates`/`next_steps` transitively through their parent initiative. `business_units` is shared reference data, readable by any authenticated user.
+
+A next step's displayed status (completed / overdue / pending) is derived client-side from `completion_date` and `due_date`, not stored.
+
+## Troubleshooting
+
+**`npm install`/`supabase` commands fail with `UNABLE_TO_VERIFY_LEAF_SIGNATURE`**: some antivirus suites (e.g. Norton's "Web/Mail Shield") intercept HTTPS traffic with their own certificate, which Node doesn't trust by default. Export the offending root certificate from the Windows certificate store and point Node at it via the `NODE_EXTRA_CA_CERTS` environment variable, rather than disabling TLS verification.

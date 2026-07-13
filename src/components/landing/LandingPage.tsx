@@ -35,7 +35,7 @@ export function LandingPage() {
         <button
           type="button"
           onClick={() => setIsAuthOpen(true)}
-          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-dark"
+          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-secondary"
         >
           Sign In
         </button>
@@ -52,7 +52,7 @@ export function LandingPage() {
         <button
           type="button"
           onClick={() => setIsAuthOpen(true)}
-          className="mt-8 rounded-md bg-primary px-6 py-3 text-base font-medium text-white transition-colors hover:bg-primary-dark"
+          className="mt-8 rounded-md bg-primary px-6 py-3 text-base font-medium text-white transition-colors hover:bg-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-secondary"
         >
           Get started
         </button>

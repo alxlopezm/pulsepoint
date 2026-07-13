@@ -28,7 +28,7 @@ export function InitiativeCard({
       className="group relative flex flex-col gap-3 rounded-lg border border-secondary-light/20 bg-white p-5 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-secondary-light/10 dark:bg-secondary-light/5"
     >
       {(onEdit || onDelete) && (
-        <div className="absolute right-3 top-3 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+        <div className="absolute right-3 top-3 flex gap-1 opacity-100 transition-opacity lg:opacity-0 lg:group-hover:opacity-100 lg:group-focus-within:opacity-100">
           {onEdit && (
             <button
               type="button"
