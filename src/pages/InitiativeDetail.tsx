@@ -4,12 +4,18 @@ import { ArrowLeft, Plus } from 'lucide-react'
 import { useInitiative } from '../hooks/useInitiative'
 import { useBusinessUnits } from '../hooks/useBusinessUnits'
 import { useUpdates } from '../hooks/useUpdates'
+import { useNextSteps } from '../hooks/useNextSteps'
 import { LoadingSpinner } from '../components/LoadingSpinner'
 import { ErrorState } from '../components/ErrorState'
 import { UpdatesTable } from '../components/tables/UpdatesTable'
+import { NextStepsTable } from '../components/tables/NextStepsTable'
 import { AddUpdateModal } from '../components/forms/AddUpdateModal'
+import { NextStepFormModal } from '../components/forms/NextStepFormModal'
+import { ConfirmDialog } from '../components/modals/ConfirmDialog'
+import { supabase } from '../lib/supabaseClient'
 import { priorityDotColor, statusMeta } from '../utils/initiativeDisplay'
 import { formatDate } from '../utils/formatDate'
+import type { NextStep } from '../types/database'
 
 export function InitiativeDetail() {
   const { id } = useParams()
@@ -22,7 +28,27 @@ export function InitiativeDetail() {
     error: updatesError,
     refetch: refetchUpdates,
   } = useUpdates(id)
+  const {
+    nextSteps,
+    loading: nextStepsLoading,
+    error: nextStepsError,
+    refetch: refetchNextSteps,
+  } = useNextSteps(id)
   const [isAddUpdateOpen, setIsAddUpdateOpen] = useState(false)
+  const [editingNextStep, setEditingNextStep] = useState<NextStep | null>(null)
+  const [isAddNextStepOpen, setIsAddNextStepOpen] = useState(false)
+  const [deletingNextStep, setDeletingNextStep] = useState<NextStep | null>(null)
+  const [deletingNextStepBusy, setDeletingNextStepBusy] = useState(false)
+
+  const handleDeleteNextStep = async () => {
+    if (!deletingNextStep) return
+    setDeletingNextStepBusy(true)
+    const { error } = await supabase.from('next_steps').delete().eq('id', deletingNextStep.id)
+    setDeletingNextStepBusy(false)
+    if (!error) {
+      setDeletingNextStep(null)
+    }
+  }
 
   const businessUnitName = businessUnits.find(
     (bu) => bu.id === initiative?.business_unit_id,
@@ -148,6 +174,67 @@ export function InitiativeDetail() {
             isOpen={isAddUpdateOpen}
             onClose={() => setIsAddUpdateOpen(false)}
             initiativeId={initiative.id}
+          />
+        </div>
+      )}
+
+      {!loading && !error && initiative && (
+        <div className="mt-6 rounded-lg border border-secondary-light/20 bg-white p-6 dark:border-secondary-light/10 dark:bg-secondary-light/5">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-secondary dark:text-secondary-lighter">
+              Next Steps
+            </h2>
+            <button
+              type="button"
+              onClick={() => setIsAddNextStepOpen(true)}
+              className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-primary-dark"
+            >
+              <Plus size={14} />
+              Add Next Step
+            </button>
+          </div>
+
+          {nextStepsLoading && (
+            <div className="flex justify-center py-8">
+              <LoadingSpinner />
+            </div>
+          )}
+
+          {!nextStepsLoading && nextStepsError && (
+            <ErrorState
+              message={`Couldn't load next steps: ${nextStepsError}`}
+              onRetry={refetchNextSteps}
+            />
+          )}
+
+          {!nextStepsLoading && !nextStepsError && (
+            <NextStepsTable
+              nextSteps={nextSteps}
+              onEdit={(step) => setEditingNextStep(step)}
+              onDelete={(step) => setDeletingNextStep(step)}
+            />
+          )}
+
+          <NextStepFormModal
+            isOpen={isAddNextStepOpen}
+            onClose={() => setIsAddNextStepOpen(false)}
+            initiativeId={initiative.id}
+          />
+
+          <NextStepFormModal
+            isOpen={Boolean(editingNextStep)}
+            onClose={() => setEditingNextStep(null)}
+            initiativeId={initiative.id}
+            nextStep={editingNextStep}
+          />
+
+          <ConfirmDialog
+            isOpen={Boolean(deletingNextStep)}
+            onClose={() => setDeletingNextStep(null)}
+            onConfirm={handleDeleteNextStep}
+            title="Delete next step"
+            message={`Are you sure you want to delete "${deletingNextStep?.description}"? This cannot be undone.`}
+            confirming={deletingNextStepBusy}
           />
         </div>
       )}
