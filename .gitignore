@@ -20,6 +20,8 @@ supabase/.temp/
 .vscode/*
 !.vscode/extensions.json
 .idea
+.claude/settings.json
+.claude/settings.local.json
 .DS_Store
 *.suo
 *.ntvs*
