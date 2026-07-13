@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Plus } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2 } from 'lucide-react'
 import { useInitiative } from '../hooks/useInitiative'
 import { useBusinessUnits } from '../hooks/useBusinessUnits'
 import { useUpdates } from '../hooks/useUpdates'
@@ -39,6 +39,8 @@ export function InitiativeDetail() {
   const [isAddNextStepOpen, setIsAddNextStepOpen] = useState(false)
   const [deletingNextStep, setDeletingNextStep] = useState<NextStep | null>(null)
   const [deletingNextStepBusy, setDeletingNextStepBusy] = useState(false)
+  const [isDeleteInitiativeOpen, setIsDeleteInitiativeOpen] = useState(false)
+  const [deletingInitiativeBusy, setDeletingInitiativeBusy] = useState(false)
 
   const handleDeleteNextStep = async () => {
     if (!deletingNextStep) return
@@ -50,20 +52,43 @@ export function InitiativeDetail() {
     }
   }
 
+  const handleDeleteInitiative = async () => {
+    if (!initiative) return
+    setDeletingInitiativeBusy(true)
+    const { error } = await supabase.from('initiatives').delete().eq('id', initiative.id)
+    setDeletingInitiativeBusy(false)
+    if (!error) {
+      navigate('/')
+    }
+  }
+
   const businessUnitName = businessUnits.find(
     (bu) => bu.id === initiative?.business_unit_id,
   )?.name
 
   return (
     <div>
-      <button
-        type="button"
-        onClick={() => navigate('/')}
-        className="mb-4 flex items-center gap-1.5 text-sm text-secondary-light transition-colors hover:text-primary"
-      >
-        <ArrowLeft size={16} />
-        Back to dashboard
-      </button>
+      <div className="mb-4 flex items-center justify-between">
+        <button
+          type="button"
+          onClick={() => navigate('/')}
+          className="flex items-center gap-1.5 text-sm text-secondary-light transition-colors hover:text-primary"
+        >
+          <ArrowLeft size={16} />
+          Back to dashboard
+        </button>
+
+        {!loading && !error && initiative && (
+          <button
+            type="button"
+            onClick={() => setIsDeleteInitiativeOpen(true)}
+            className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-accent transition-colors hover:bg-accent-light/20 dark:hover:bg-accent-dark/20"
+          >
+            <Trash2 size={14} />
+            Delete Initiative
+          </button>
+        )}
+      </div>
 
       {loading && (
         <div className="flex justify-center py-16">
@@ -237,6 +262,17 @@ export function InitiativeDetail() {
             confirming={deletingNextStepBusy}
           />
         </div>
+      )}
+
+      {initiative && (
+        <ConfirmDialog
+          isOpen={isDeleteInitiativeOpen}
+          onClose={() => setIsDeleteInitiativeOpen(false)}
+          onConfirm={handleDeleteInitiative}
+          title="Delete initiative"
+          message={`Are you sure you want to delete "${initiative.name}"? This will also delete all of its updates and next steps. This cannot be undone.`}
+          confirming={deletingInitiativeBusy}
+        />
       )}
     </div>
   )
