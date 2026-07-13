@@ -1,3 +1,4 @@
+import { Pencil, Trash2 } from 'lucide-react'
 import type { Initiative } from '../../types/database'
 import { priorityDotColor, statusMeta } from '../../utils/initiativeDisplay'
 
@@ -5,19 +6,59 @@ interface InitiativeCardProps {
   initiative: Initiative
   businessUnitName: string
   onClick?: () => void
+  onEdit?: () => void
+  onDelete?: () => void
 }
 
-export function InitiativeCard({ initiative, businessUnitName, onClick }: InitiativeCardProps) {
+export function InitiativeCard({
+  initiative,
+  businessUnitName,
+  onClick,
+  onEdit,
+  onDelete,
+}: InitiativeCardProps) {
   const status = statusMeta[initiative.status]
   const StatusIcon = status.icon
 
   return (
-    <button
-      type="button"
+    <div
       onClick={onClick}
-      className="flex flex-col gap-3 rounded-lg border border-secondary-light/20 bg-white p-5 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-secondary-light/10 dark:bg-secondary-light/5"
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      className="group relative flex flex-col gap-3 rounded-lg border border-secondary-light/20 bg-white p-5 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-secondary-light/10 dark:bg-secondary-light/5"
     >
-      <div className="flex items-start justify-between gap-2">
+      {(onEdit || onDelete) && (
+        <div className="absolute right-3 top-3 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+          {onEdit && (
+            <button
+              type="button"
+              aria-label="Edit initiative"
+              onClick={(e) => {
+                e.stopPropagation()
+                onEdit()
+              }}
+              className="rounded-md p-1.5 text-secondary-light transition-colors hover:bg-secondary-lighter hover:text-secondary dark:hover:bg-secondary-light/10 dark:hover:text-secondary-lighter"
+            >
+              <Pencil size={14} />
+            </button>
+          )}
+          {onDelete && (
+            <button
+              type="button"
+              aria-label="Delete initiative"
+              onClick={(e) => {
+                e.stopPropagation()
+                onDelete()
+              }}
+              className="rounded-md p-1.5 text-secondary-light transition-colors hover:bg-accent-light/20 hover:text-accent dark:hover:bg-accent-dark/20"
+            >
+              <Trash2 size={14} />
+            </button>
+          )}
+        </div>
+      )}
+
+      <div className="flex items-start justify-between gap-2 pr-12">
         <h3 className="font-semibold text-secondary dark:text-secondary-lighter">{initiative.name}</h3>
         <span
           title={`${initiative.priority} priority`}
@@ -41,6 +82,6 @@ export function InitiativeCard({ initiative, businessUnitName, onClick }: Initia
         <StatusIcon size={13} />
         {status.label}
       </span>
-    </button>
+    </div>
   )
 }
