@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-pulsepoint}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pulsepoint}
+      POSTGRES_DB: ${POSTGRES_DB:-pulsepoint}
+    ports:
+      - '5432:5432'
+    volumes:
+      - pulsepoint_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-pulsepoint} -d ${POSTGRES_DB:-pulsepoint}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pulsepoint_pgdata:

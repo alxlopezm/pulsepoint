@@ -1,0 +1,111 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Priority {
+  high
+  medium
+  low
+}
+
+enum InitiativeStatus {
+  requested
+  in_design
+  in_assessment
+  approved
+  in_development
+}
+
+enum InitiativeType {
+  technology_request
+  ea_governance
+  ea_growth
+}
+
+enum NextStepStatus {
+  pending
+  started
+  completed
+  overdue
+}
+
+model User {
+  id            String   @id @default(uuid()) @db.Uuid
+  email         String   @unique
+  password_hash String
+  created_at    DateTime @default(now())
+
+  initiatives Initiative[]
+  updates     Update[]
+
+  @@map("users")
+}
+
+model BusinessUnit {
+  id         String   @id @default(uuid()) @db.Uuid
+  name       String   @unique
+  created_at DateTime @default(now())
+
+  initiatives Initiative[]
+
+  @@map("business_units")
+}
+
+model Initiative {
+  id                String           @id @default(uuid()) @db.Uuid
+  name              String
+  description       String?
+  owner             String?
+  business_unit_id  String           @db.Uuid
+  business_unit     BusinessUnit     @relation(fields: [business_unit_id], references: [id], onDelete: Restrict)
+  priority          Priority         @default(medium)
+  status            InitiativeStatus @default(requested)
+  type              InitiativeType
+  created_by        String           @db.Uuid
+  creator           User             @relation(fields: [created_by], references: [id], onDelete: Cascade)
+  created_at        DateTime         @default(now())
+  updated_at        DateTime         @updatedAt
+
+  updates    Update[]
+  next_steps NextStep[]
+
+  @@index([created_by])
+  @@index([business_unit_id])
+  @@index([status])
+  @@map("initiatives")
+}
+
+model Update {
+  id            String     @id @default(uuid()) @db.Uuid
+  initiative_id String     @db.Uuid
+  initiative    Initiative @relation(fields: [initiative_id], references: [id], onDelete: Cascade)
+  content       String
+  created_by    String     @db.Uuid
+  creator       User       @relation(fields: [created_by], references: [id], onDelete: Cascade)
+  created_at    DateTime   @default(now())
+
+  @@index([initiative_id])
+  @@map("updates")
+}
+
+model NextStep {
+  id                  String         @id @default(uuid()) @db.Uuid
+  initiative_id       String         @db.Uuid
+  initiative          Initiative     @relation(fields: [initiative_id], references: [id], onDelete: Cascade)
+  description         String
+  responsible_person  String?
+  due_date            DateTime?      @db.Date
+  start_date          DateTime?      @db.Date
+  completion_date     DateTime?      @db.Date
+  status              NextStepStatus @default(pending)
+  created_at          DateTime       @default(now())
+
+  @@index([initiative_id])
+  @@index([due_date])
+  @@map("next_steps")
+}
